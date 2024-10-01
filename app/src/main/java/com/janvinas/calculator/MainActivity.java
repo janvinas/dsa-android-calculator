@@ -1,10 +1,10 @@
 package com.janvinas.calculator;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.activity.EdgeToEdge;
@@ -14,7 +14,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.text.DecimalFormat;
-import java.util.Locale;
 
 enum Operation{
     ADDITION,
@@ -33,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     Operation latestOperation;
     Double firstNumber;
     Double result;
+
+    boolean useDegrees = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,16 +64,21 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void computeOperation(){
+
+        if(latestOperation == null){
+            return;
+        }
+
         double secondNumber;
         try {
             assert firstNumber != null;
             secondNumber = Double.parseDouble(text.getText().toString());
         }catch(NumberFormatException | AssertionError e){
             text.setText("ERR");
+            result = null;
             return;
         }
 
-        double result = 0;
         switch(latestOperation){
             case ADDITION:
                 result = firstNumber + secondNumber;
@@ -92,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         printNumber(result);
+        latestOperation = null;
     }
 
     private void printNumber(double d){
@@ -100,13 +107,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawCharacter(char c){
+        result = null;
         if(c == 0){
             int length = text.length();
             if(length > 0) {
                 text.getText().delete(length - 1, length);
             }
         }else{
-            result = null;
             text.getText().append(c);
         }
     }
@@ -117,9 +124,11 @@ public class MainActivity extends AppCompatActivity {
             number = Double.parseDouble(text.getText().toString());
         }catch(NumberFormatException e){
             text.setText("ERR");
+            result = null;
             return;
         }
 
+        if(useDegrees) number *= (Math.PI / 180);
         switch(op){
             case SIN:
                 result = Math.sin(number);
@@ -162,5 +171,10 @@ public class MainActivity extends AppCompatActivity {
         }else if(id == R.id.button_tan){
             computeInstantOperation(Operation.TAN);
         }
+    }
+
+    public void onDegreesClick(View v){
+        useDegrees = !useDegrees;
+        ((Button) v).setText(useDegrees ? "D" : "R");
     }
 }
